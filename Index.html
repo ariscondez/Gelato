@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Control Helados</title>
+<style>
+body { font-family:sans-serif; padding:20px; background:#f6f7fb; }
+button { margin:5px; padding:10px; border-radius:5px; background:#4d9cff; color:white; border:none; }
+input { margin:5px; padding:5px; width:60px; }
+#content { margin-top:20px; padding:10px; background:#fff; border-radius:5px; }
+</style>
+</head>
+<body>
+
+<h1>Control Helados 🍦</h1>
+
+<button onclick="showInventory()">Inventario</button>
+<button onclick="showProduction()">Producción</button>
+<button onclick="showSales()">Ventas</button>
+<button onclick="showReport()">Reporte</button>
+
+<div id="content"></div>
+
+<script>
+// Inicializar datos en LocalStorage si no existen
+if(!localStorage.getItem('inventory')) {
+    const initialInventory = {citrico:0, pie:0, magnum:0};
+    localStorage.setItem('inventory', JSON.stringify(initialInventory));
+}
+if(!localStorage.getItem('production')) localStorage.setItem('production', JSON.stringify({citrico:0, pie:0, magnum:0}));
+if(!localStorage.getItem('sales')) localStorage.setItem('sales', JSON.stringify({citrico:0, pie:0, magnum:0}));
+
+function getInventory() { return JSON.parse(localStorage.getItem('inventory')); }
+function getProduction() { return JSON.parse(localStorage.getItem('production')); }
+function getSales() { return JSON.parse(localStorage.getItem('sales')); }
+
+function showInventory() {
+    const inv = getInventory();
+    document.getElementById('content').innerHTML = `
+        <h2>Inventario</h2>
+        <p>Cítricos: ${inv.citrico}<br>Pie de limón: ${inv.pie}<br>Cremosas tipo Magnum: ${inv.magnum}</p>
+    `;
+}
+
+function showProduction() {
+    document.getElementById('content').innerHTML = `
+        <h2>Producción diaria</h2>
+        <p>Agregar helados producidos hoy:</p>
+        <input type="number" id="prodCitrico" placeholder="Cítricos">
+        <input type="number" id="prodPie" placeholder="Pie de limón">
+        <input type="number" id="prodMagnum" placeholder="Magnum">
+        <button onclick="saveProduction()">Guardar</button>
+    `;
+}
+
+function saveProduction() {
+    const prod = { 
+        citrico: parseInt(document.getElementById('prodCitrico').value) || 0,
+        pie: parseInt(document.getElementById('prodPie').value) || 0,
+        magnum: parseInt(document.getElementById('prodMagnum').value) || 0
+    };
+    const inventory = getInventory();
+    inventory.citrico += prod.citrico;
+    inventory.pie += prod.pie;
+    inventory.magnum += prod.magnum;
+    localStorage.setItem('inventory', JSON.stringify(inventory));
+
+    const production = getProduction();
+    production.citrico += prod.citrico;
+    production.pie += prod.pie;
+    production.magnum += prod.magnum;
+    localStorage.setItem('production', JSON.stringify(production));
+
+    document.getElementById('content').innerHTML = `<p>Producción guardada exitosamente.</p>`;
+}
+
+function showSales() {
+    document.getElementById('content').innerHTML = `
+        <h2>Ventas</h2>
+        <p>Registrar ventas de hoy:</p>
+        <input type="number" id="salesCitrico" placeholder="Cítricos">
+        <input type="number" id="salesPie" placeholder="Pie de limón">
+        <input type="number" id="salesMagnum" placeholder="Magnum">
+        <button onclick="saveSales()">Guardar ventas</button>
+    `;
+}
+
+function saveSales() {
+    const salesToday = { 
+        citrico: parseInt(document.getElementById('salesCitrico').value) || 0,
+        pie: parseInt(document.getElementById('salesPie').value) || 0,
+        magnum: parseInt(document.getElementById('salesMagnum').value) || 0
+    };
+    const inventory = getInventory();
+    inventory.citrico -= salesToday.citrico;
+    inventory.pie -= salesToday.pie;
+    inventory.magnum -= salesToday.magnum;
+    localStorage.setItem('inventory', JSON.stringify(inventory));
+
+    const sales = getSales();
+    sales.citrico += salesToday.citrico;
+    sales.pie += salesToday.pie;
+    sales.magnum += salesToday.magnum;
+    localStorage.setItem('sales', JSON.stringify(sales));
+
+    document.getElementById('content').innerHTML = `<p>Ventas registradas exitosamente.</p>`;
+}
+
+function showReport() {
+    const inv = getInventory();
+    const prod = getProduction();
+    const sales = getSales();
+    document.getElementById('content').innerHTML = `
+        <h2>Reporte diario</h2>
+        <p><strong>Inventario:</strong><br>
+        Cítricos: ${inv.citrico}<br>Pie de limón: ${inv.pie}<br>Magnum: ${inv.magnum}</p>
+        <p><strong>Producción hoy:</strong><br>
+        Cítricos: ${prod.citrico}<br>Pie de limón: ${prod.pie}<br>Magnum: ${prod.magnum}</p>
+        <p><strong>Ventas hoy:</strong><br>
+        Cítricos: ${sales.citrico}<br>Pie de limón: ${sales.pie}<br>Magnum: ${sales.magnum}</p>
+    `;
+}
+</script>
+
+</body>
+</html>
